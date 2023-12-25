@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ONLYOFFICE PDF Editor</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=IE8"/>
+    <meta name="description" content="" />
+    <meta name="keywords" content="" />
+    <link rel="icon" href="resources/img/favicon.ico" type="image/x-icon" />
+
+    <!-- splash -->
+
+    <style type="text/css">
+        .content-theme-dark {
+            --skeleton-canvas-content-background: #3a3a3a;
+            --skeleton-canvas-page-border: #2a2a2a;
+            --skeleton-canvas-line: rgba(255,255,255,.05);
+        }
+
+        .loadmask {
+            left: 0;
+            top: 0;
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            border: none;
+            background: #e2e2e2;
+            background: var(--canvas-background, #e2e2e2);
+            z-index: 1002;
+        }
+
+        .loadmask > .brendpanel {
+            width: 100%;
+            min-height: 28px;
+            background: #AA5252;
+            background: var(--toolbar-header-pdf, #AA5252);
+        }
+
+        .loadmask > .brendpanel > div {
+            display: flex;
+            align-items: center;
+            height: 28px;
+        }
+
+        .loadmask > .brendpanel .spacer {
+            margin-left: auto;
+        }
+
+        .loadmask > .brendpanel .loading-logo {
+            padding: 0 24px 0 12px;
+            max-width: 200px;
+            height: 20px;
+        }
+
+        .loadmask > .brendpanel .loading-logo > img {
+            display: inline-block;
+            max-width: 100px;
+            max-height: 20px;
+            opacity: 0;
+        }
+
+        .loadmask > .brendpanel .rect {
+            vertical-align: middle;
+            width: 50px;
+            height: 12px;
+            border-radius: 3px;
+            margin: 0 10px;
+            background: rgba(255,255,255,.2);
+            background: var(--highlight-header-button-hover, rgba(255,255,255,.2));
+        }
+
+        .loadmask > .brendpanel .circle {
+            vertical-align: middle;
+            width: 20px;
+            height: 20px;
+            border-radius: 20px;
+            margin: 0 10px;
+            background: rgba(255,255,255,.2);
+            background: var(--highlight-header-button-hover, rgba(255,255,255,.2));
+        }
+
+        .loadmask > .sktoolbar {
+            background: #f1f1f1;
+            background: var(--background-toolbar, #f1f1f1);
+            border-bottom: 1px solid #cbcbcb;
+            border-bottom: var(--scaled-one-px-value, 1px) solid var(--border-toolbar, #cbcbcb);
+            height: 46px;
+            padding: 10px 6px;
+            box-sizing: content-box;
+        }
+
+        .loadmask > .sktoolbar ul {
+            margin: 0;
+            padding: 0;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .loadmask > .sktoolbar li {
+            background: #d8dadc;
+            background: var(--highlight-button-hover, #d8dadc);
+            border-radius: 3px;
+            width: 20px;
+            height: 20px;
+            display: inline-block;
+            margin-right: 6px;
+        }
+
+        .loadmask > .sktoolbar li.space {
+            background: none;
+            width: 0;
+        }
+
+        .loadmask > .sktoolbar li.big {
+            width: 40px;
+            height: 46px;
+            margin-top: -46px;
+        }
+
+        .loadmask > .sktoolbar li.fat {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            left: 587px;
+            width: inherit;
+            height: 44px;
+        }
+
+        .loadmask > .placeholder {
+            background: #fff;
+            background: var(--skeleton-canvas-content-background, var(--canvas-content-background, #fff));
+            width: 794px;
+            margin: 19px auto 46px;
+            height: 100%;
+            border: 1px solid #bbbec2;
+            border: var(--scaled-one-px-value, 1px) solid var(--skeleton-canvas-page-border, var(--canvas-page-border, #bbbec2));
+            padding-top: 50px;
+        }
+
+        .loadmask > .placeholder > .line {
+            height: 15px;
+            margin: 30px 80px;
+            background: rgba(0,0,0,.05);
+            background: var(--skeleton-canvas-line, rgba(0,0,0,.05));
+            overflow: hidden;
+            position: relative;
+
+            -webkit-animation: flickerAnimation 2s infinite ease-in-out;
+            -moz-animation: flickerAnimation 2s infinite ease-in-out;
+            -o-animation: flickerAnimation 2s infinite ease-in-out;
+            animation: flickerAnimation 2s infinite ease-in-out;
+        }
+
+        @keyframes flickerAnimation {
+            0%   { opacity:0.5; }
+            50%  { opacity:1; }
+            100% { opacity:0.5; }
+        }
+        @-o-keyframes flickerAnimation{
+            0%   { opacity:0.5; }
+            50%  { opacity:1; }
+            100% { opacity:0.5; }
+        }
+        @-moz-keyframes flickerAnimation{
+            0%   { opacity:0.5; }
+            50%  { opacity:1; }
+            100% { opacity:0.5; }
+        }
+        @-webkit-keyframes flickerAnimation{
+            0%   { opacity:0.5; }
+            50%  { opacity:1; }
+            100% { opacity:0.5; }
+        }
+    </style>
+
+    <script>
+        // don't add zoom for mobile devices
+        // if (!(/android|avantgo|playbook|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od|ad)|iris|kindle|lge |maemo|midp|mmp|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent || navigator.vendor || window.opera)))
+        //    document.getElementsByTagName('html')[0].setAttribute('style', 'zoom: ' + 1 / (window.devicePixelRatio < 2 ? window.devicePixelRatio : window.devicePixelRatio / 2) + ';');
+
+        var userAgent = navigator.userAgent.toLowerCase(),
+            check = function(regex){ return regex.test(userAgent); },
+            stopLoading = false;
+        if (!check(/opera/) && (check(/msie/) || check(/trident/))) {
+            var m = /msie (\d+\.\d+)/.exec(userAgent);
+            if (m && parseFloat(m[1]) < 10.0) {
+                document.write('<div class="app-error-panel">' +
+                                '<div class="message-block">' +
+                                    '<div class="message-inner">' +
+                                        '<div class="title">Your browser is not supported.</div>' +
+                                        '<div class="text">Sorry, PDF Editor is currently only supported in the latest versions of the Chrome, Firefox, Safari or Internet Explorer web browsers.</div>' +
+                                    '</div>' +
+                                '</div></div>');
+                stopLoading = true;
+            }
+        } else
+        if (check(/windows\snt/i)) {
+            var re = /chrome\/(\d+)/i.exec(userAgent);
+            if (!!re && !!re[1] && !(re[1] > 49)) {
+                setTimeout(function () {
+                    document.getElementsByTagName('html')[0].className += "winxp";
+                },0);
+            }
+        }
+
+        function getUrlParams() {
+            var e,
+                a = /\+/g,  // Regex for replacing addition symbol with a space
+                r = /([^&=]+)=?([^&]*)/g,
+                d = function (s) { return decodeURIComponent(s.replace(a, " ")); },
+                q = window.location.search.substring(1),
+                urlParams = {};
+
+            while (e = r.exec(q))
+                urlParams[d(e[1])] = d(e[2]);
+
+            return urlParams;
+        }
+
+        function encodeUrlParam(str) {
+            return str.replace(/"/g, '&quot;')
+                    .replace(/'/g, '&#39;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+        }
+
+        var params = getUrlParams(),
+            lang = (params["lang"] || 'en').split(/[\-\_]/)[0],
+            logo = params["headerlogo"] ? encodeUrlParam(params["headerlogo"]) : null,
+            logoDark = params["headerlogodark"] ? encodeUrlParam(params["headerlogodark"]) : null;
+
+        window.frameEditorId = params["frameEditorId"];
+        window.parentOrigin = params["parentOrigin"];
+    </script>
+
+    <link rel="stylesheet" type="text/css" href="../../../apps/pdfeditor/main/resources/css/app.css">
+    <script>
+/*
+ * (c) Copyright Ascensio System SIA 2010-2023
+ *
+ * This program is a free software product. You can redistribute it and/or
+ * modify it under the terms of the GNU Affero General Public License (AGPL)
+ * version 3 as published by the Free Software Foundation. In accordance with
+ * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
+ * that Ascensio System SIA expressly excludes the warranty of non-infringement
+ * of any third-party rights.
+ *
+ * This program is distributed WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
+ * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ *
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
+ * street, Riga, Latvia, EU, LV-1050.
+ *
+ * The  interactive user interfaces in modified source and object code versions
+ * of the Program must display Appropriate Legal Notices, as required under
+ * Section 5 of the GNU AGPL version 3.
+ *
+ * Pursuant to Section 7(b) of the License you must retain the original Product
+ * logo when distributing the program. Pursuant to Section 7(e) we decline to
+ * grant you any rights under trademark law for use of our trademarks.
+ *
+ * All the Product's GUI elements, including illustrations and icon sets, as
+ * well as technical writing content are licensed under the terms of the
+ * Creative Commons Attribution-ShareAlike 4.0 International. See the License
+ * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ *
+ */
+
+if ( window.AscDesktopEditor ) {
+    window.desktop = window.AscDesktopEditor;
+    desktop.features = {};
+    window.native_message_cmd = [];
+
+    window.on_native_message = function (cmd, param) {
+        if ( /window:features/.test(cmd) ) {
+            var obj = JSON.parse(param);
+            if ( obj.singlewindow !== undefined ) {
+                desktop.features.singlewindow = obj.singlewindow;
+            }
+        } else
+            window.native_message_cmd[cmd] = param;
+    }
+
+    if ( !!window.RendererProcessVariable ) {
+        const theme = desktop.theme = window.RendererProcessVariable.theme;
+        const map_themes = window.RendererProcessVariable.localthemes;
+
+        if ( theme ) {
+            window.uitheme = {
+                id: theme.id,
+                type: theme.type,
+            }
+
+            if ( /dark|light/.test(theme.system) ) {
+                window.uitheme.is_system_theme_dark = function () {
+                    return theme.system == 'dark';
+                }
+            }
+
+            if ( map_themes && map_themes[theme.id] ) {
+                window.uitheme.colors = map_themes[theme.id].colors;
+                // window.desktop.themes = map_themes;
+            }
+        }
+    }
+
+    window.desktop.execCommand('webapps:entry', (window.features && JSON.stringify(window.features)) || '');
+}
+
+</script>
+    <script>
+/*
+ * (c) Copyright Ascensio System SIA 2010-2023
+ *
+ * This program is a free software product. You can redistribute it and/or
+ * modify it under the terms of the GNU Affero General Public License (AGPL)
+ * version 3 as published by the Free Software Foundation. In accordance with
+ * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
+ * that Ascensio System SIA expressly excludes the warranty of non-infringement
+ * of any third-party rights.
+ *
+ * This program is distributed WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
+ * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ *
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
+ * street, Riga, Latvia, EU, LV-1050.
+ *
+ * The  interactive user interfaces in modified source and object code versions
+ * of the Program must display Appropriate Legal Notices, as required under
+ * Section 5 of the GNU AGPL version 3.
+ *
+ * Pursuant to Section 7(b) of the License you must retain the original Product
+ * logo when distributing the program. Pursuant to Section 7(e) we decline to
+ * grant you any rights under trademark law for use of our trademarks.
+ *
+ * All the Product's GUI elements, including illustrations and icon sets, as
+ * well as technical writing content are licensed under the terms of the
+ * Creative Commons Attribution-ShareAlike 4.0 International. See the License
+ * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ *
+ */
+
++function init_themes() {
+    !window.uitheme && (window.uitheme = {});
+
+    window.uitheme.set_id = function (id) {
+        if ( id == 'theme-system' )
+            this.adapt_to_system_theme();
+        else this.id = id;
+    }
+
+    window.uitheme.is_theme_system = function () {
+        return this.id == 'theme-system';
+    }
+
+    window.uitheme.adapt_to_system_theme = function () {
+        this.id = 'theme-system';
+        this.type = this.is_system_theme_dark() ? 'dark' : 'light';
+    }
+
+    window.uitheme.relevant_theme_id = function () {
+        if ( this.is_theme_system() )
+            return this.is_system_theme_dark() ? 'theme-dark' : 'theme-classic-light';
+        return this.id;
+    }
+
+    if ( !window.uitheme.is_system_theme_dark )
+        window.uitheme.is_system_theme_dark = function () {
+            return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        }
+
+    !window.uitheme.id && window.uitheme.set_id(localStorage.getItem("ui-theme-id"));
+    window.uitheme.iscontentdark = localStorage.getItem("content-theme") == 'dark';
+
+    let objtheme = window.uitheme.colors ? window.uitheme : localStorage.getItem("ui-theme");
+    if ( !!objtheme ) {
+        if ( typeof(objtheme) == 'string' && objtheme.lastIndexOf("{", 0) === 0 &&
+                objtheme.indexOf("}", objtheme.length - 1) !== -1 )
+        {
+            objtheme = JSON.parse(objtheme);
+        }
+
+        if ( objtheme ) {
+            if ( window.uitheme.id && window.uitheme.id != objtheme.id ) {
+                localStorage.removeItem("ui-theme");
+                !window.uitheme.type && /-dark/.test(window.uitheme.id) && (window.uitheme.type = 'dark');
+            } else {
+                window.uitheme.cache = objtheme;
+                if ( !window.uitheme.type && objtheme.type ) {
+                    window.uitheme.type = objtheme.type;
+                }
+
+                if ( objtheme.colors ) {
+                    let colors = [];
+                    for (let c in objtheme.colors) {
+                        // TODO: new PE brand color, clear for ver 7.7
+                        if ( c == 'toolbar-header-presentation' &&
+                                objtheme.colors[c] == '#aa5252' )
+                            objtheme.colors[c] = '#BE664F';
+                        //
+
+                        colors.push('--' + c + ':' + objtheme.colors[c]);
+                    }
+
+                    var style = document.createElement('style');
+                    style.type = 'text/css';
+                    style.innerHTML = '.' + objtheme.id + '{' + colors.join(';') + ';}';
+                    document.getElementsByTagName('head')[0].appendChild(style);
+                }
+            }
+        }
+    }
+}();
+</script>
+</head>
+<body>
+    <script>
+/*
+ * (c) Copyright Ascensio System SIA 2010-2023
+ *
+ * This program is a free software product. You can redistribute it and/or
+ * modify it under the terms of the GNU Affero General Public License (AGPL)
+ * version 3 as published by the Free Software Foundation. In accordance with
+ * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
+ * that Ascensio System SIA expressly excludes the warranty of non-infringement
+ * of any third-party rights.
+ *
+ * This program is distributed WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
+ * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ *
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
+ * street, Riga, Latvia, EU, LV-1050.
+ *
+ * The  interactive user interfaces in modified source and object code versions
+ * of the Program must display Appropriate Legal Notices, as required under
+ * Section 5 of the GNU AGPL version 3.
+ *
+ * Pursuant to Section 7(b) of the License you must retain the original Product
+ * logo when distributing the program. Pursuant to Section 7(e) we decline to
+ * grant you any rights under trademark law for use of our trademarks.
+ *
+ * All the Product's GUI elements, including illustrations and icon sets, as
+ * well as technical writing content are licensed under the terms of the
+ * Creative Commons Attribution-ShareAlike 4.0 International. See the License
+ * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ *
+ */
+var checkLocalStorage = (function () {
+    try {
+        var storage = window['localStorage'];
+        return true;
+    }
+    catch(e) {
+        return false;
+    }
+})();
+
+if ( checkLocalStorage && localStorage.getItem("ui-rtl") === '1' ) {
+    document.body.setAttribute('dir', 'rtl');
+    document.body.classList.add('rtl');
+}
+
+const isIE = /msie|trident/i.test(navigator.userAgent);
+
+function checkScaling() {
+    var matches = {
+        'pixel-ratio__1_25': "screen and (-webkit-min-device-pixel-ratio: 1.25) and (-webkit-max-device-pixel-ratio: 1.49), " +
+                                "screen and (min-resolution: 1.25dppx) and (max-resolution: 1.49dppx)",
+        'pixel-ratio__1_5': "screen and (-webkit-min-device-pixel-ratio: 1.5) and (-webkit-max-device-pixel-ratio: 1.74), " +
+                                "screen and (min-resolution: 1.5dppx) and (max-resolution: 1.74dppx)",
+        'pixel-ratio__1_75': "screen and (-webkit-min-device-pixel-ratio: 1.75) and (-webkit-max-device-pixel-ratio: 1.99), " +
+                                "screen and (min-resolution: 1.75dppx) and (max-resolution: 1.99dppx)",
+    };
+
+    for (var c in matches) {
+        if ( window.matchMedia(matches[c]).matches ) {
+            document.body.classList.add(c);
+            break;
+        }
+    }
+
+    if ( !isIE ) {
+        matches = {
+            'pixel-ratio__2_5': 'screen and (-webkit-min-device-pixel-ratio: 2.25), screen and (min-resolution: 2.25dppx)',
+        };
+        for (let c in matches) {
+            if ( window.matchMedia(matches[c]).matches ) {
+                document.body.classList.add(c);
+                Common.Utils.injectSvgIcons();
+                break;
+            }
+        }
+    }
+}
+
+let svg_icons = ['./resources/img/iconssmall@2.5x.svg',
+    './resources/img/iconsbig@2.5x.svg', './resources/img/iconshuge@2.5x.svg'];
+
+window.Common = {
+    Utils: {
+        injectSvgIcons: function () {
+            if ( isIE ) return;
+
+            let runonce;
+            // const el = document.querySelector('div.inlined-svg');
+            // if (!el || !el.innerHTML.firstChild) {
+            if ( !runonce ) {
+                runonce = true;
+                function htmlToElements(html) {
+                    var template = document.createElement('template');
+                    template.innerHTML = html;
+                    // return template.content.childNodes;
+                    return template.content.firstChild;
+                }
+
+                svg_icons.map(function (url) {
+                            fetch(url)
+                                .then(function (r) {
+                                    if (r.ok) return r.text();
+                                    else {/* error */}
+                                }).then(function (text) {
+                                    const el = document.querySelector('div.inlined-svg')
+                                    el.appendChild(htmlToElements(text));
+
+                                    const i = svg_icons.findIndex(function (item) {return item == url});
+                                    if ( !(i < 0) ) svg_icons.splice(i, 1)
+                                }).catch(console.error.bind(console))
+                        })
+            }
+        }
+    }
+}
+
+checkScaling();
+
+if ( !!params.uitheme ) {
+    if ( params.uitheme == 'default-dark' ) {
+        params.uitheme = 'theme-dark';
+        params.uithemetype = 'dark';
+    } else
+    if ( params.uitheme == 'default-light' ) {
+        params.uitheme = 'theme-classic-light';
+        params.uithemetype = 'light';
+    } else
+    if ( params.uitheme == 'theme-system' ) {}
+}
+
+!window.uitheme.id && params.uitheme && (window.uitheme.id = params.uitheme);
+if ( !window.uitheme.id ) {
+    window.uitheme.adapt_to_system_theme();
+} else {
+    !window.uitheme.type && params.uitheme && (window.uitheme.type = params.uithemetype);
+}
+
+document.body.classList.add(window.uitheme.relevant_theme_id());
+
+if ( window.uitheme.type == 'dark' ) {
+    document.body.classList.add("theme-type-dark");
+
+    if ( checkLocalStorage && localStorage.getItem("content-theme") == 'dark' ) {
+        document.body.classList.add("content-theme-dark");
+    } else {
+    // document.body.classList.add("theme-type-ligth");
+    }
+}
+
+if ( !window.is_system_theme_dark )
+    delete window.is_system_theme_dark;
+
+</script>
+
+    <div id="loading-mask" class="loadmask"><div class="brendpanel" style="display: none;"><div><div class="loading-logo"><img src="../../../apps/common/main/resources/img/header/header-logo_s.svg"></div><div class="spacer"></div><div class="circle"></div></div><div><span class="rect"></span><span class="rect"></span><span class="rect"></span><span class="rect"></span><span class="rect"></span><span class="rect"></span></div></div><div class="sktoolbar" style="display: none;"><ul><li class="compact" style="width: 30px;display: none;"></li><li class="compact space" style="display: none;"></li><li class="compact" style="width: 90px;display: none;"></li><li class="not-compact" style="width: 63px;"></li><li class="space" style="width: 98px;"></li><li style="width: 105px;"></li><li class="space"></li><li style="width: 160px;"></li></ul><ul><li class="compact" style="width: 30px;display: none;"></li><li class="compact space" style="display: none;"></li><li class="compact" style="width: 90px;display: none;"></li><li class="not-compact" style="width: 63px;"></li><li class="space"></li><li class="big"/><li class="big"/><li class="space"></li><li style="width: 105px;"></li><li class="space"></li><li style="width: 160px;"></li></ul></div><div class="placeholder" style="display: none;"><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div></div></div>
+    <div id="viewport"></div>
+
+    <script>
+        if ( window.desktop ) {
+            var logo = document.getElementsByClassName('loading-logo');
+            if ( !!logo && logo.length ) {
+                logo[0].setAttribute('style','display:none;');
+            }
+        }
+
+        var params = getUrlParams(),
+            notoolbar = params["toolbar"] == 'false',
+            compact = params["compact"] == 'true',
+            view = params["mode"] == 'view',
+            visible = true;
+
+        (compact || view || notoolbar) && document.querySelector('.brendpanel > :nth-child(2)').remove();
+
+        if (compact || view) {
+            if (notoolbar) {
+                document.querySelector('.brendpanel > :nth-child(1)').remove();
+                visible = false;
+            } else
+                document.querySelector('.brendpanel > :nth-child(1)').style.height = '32px';
+        } else if (notoolbar) {
+            document.querySelector('.brendpanel > :nth-child(1)').style.height = '28px';
+        }
+
+        if (compact) {
+            document.querySelectorAll('.not-compact').forEach(function(item){
+                item.remove();
+            });
+            document.querySelectorAll('.compact').forEach(function(item){
+                item.style.display = 'inline-block';
+            });
+            document.querySelector('.fat').style.left = '655px';
+        }
+
+        visible && (document.querySelector('.brendpanel').style.display = 'block');
+        !(view && (params["toolbar"] !== 'true') || notoolbar) && (document.querySelector('.sktoolbar').style.display = 'block');
+        view && (document.querySelector('.placeholder').style.marginTop = '19px');
+        document.querySelector('.placeholder').style.display = 'block';
+
+        if (stopLoading) {
+            document.body.removeChild(document.getElementById('loading-mask'));
+        } else {
+            var elem = document.querySelector('.loading-logo img');
+            if (elem) {
+                (logo || logoDark) && elem.setAttribute('src', /theme-(?:[a-z]+-)?dark(?:-[a-z]*)?/.test(document.body.className) ? logoDark || logo : logo || logoDark);
+                elem.style.opacity = 1;
+            }
+        }
+    </script>
+
+    <script>
+        window.requireTimeourError = function(){
+            var reqerr;
+
+            if ( lang == 'de')      reqerr = 'Die Verbindung ist zu langsam, einige Komponenten konnten nicht geladen werden. Aktualisieren Sie bitte die Seite.';
+            else if ( lang == 'es') reqerr = 'La conexión es muy lenta, algunos de los componentes no han podido cargar. Por favor recargue la página.';
+            else if ( lang == 'fr') reqerr = 'La connexion est trop lente, certains des composants n\'ons pas pu être chargé. Veuillez recharger la page.';
+            else if ( lang == 'ru') reqerr = 'Слишком медленное соединение, не удается загрузить некоторые компоненты. Пожалуйста, обновите страницу.';
+            else if ( lang == 'tr') reqerr = 'Bağlantı çok yavaş, bileşenlerin bazıları yüklenemedi. Lütfen sayfayı yenileyin.';
+            else reqerr = 'The connection is too slow, some of the components could not be loaded. Please reload the page.';
+
+            return reqerr;
+        };
+
+        var requireTimeoutID = setTimeout(function(){
+            window.alert(window.requireTimeourError());
+            window.location.reload();
+        }, 30000);
+
+        var require = {
+            waitSeconds: 30,
+            callback: function(){
+                clearTimeout(requireTimeoutID);
+            }
+        };
+    </script>
+
+    <svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="28" height="60"><symbol id="svg-icon-crypted" viewBox="0 0 20 20"><path fill="#fff" fill-rule="evenodd" d="M10 3C7 5 4 5 4 5v3.5c0 2 .563 7.477 6 8.5 5.436-1.023 6-6.5 6-8.5V5s-3 0-6-2Zm4.023 4.965-1.046-.93-3.55 3.993-2.479-2.066-.896 1.076 3.52 2.934 4.451-5.007Z" clip-rule="evenodd"/></symbol><symbol id="svg-icon-users" viewBox="0 0 28 20"><path fill-rule="evenodd" d="M27 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm1 0c0 5.523-4.477 10-10 10a9.964 9.964 0 0 1-6.798-2.666 8 8 0 1 1 0-14.667A9.964 9.964 0 0 1 18 0c5.523 0 10 4.477 10 10ZM10.451 3.441A6.985 6.985 0 0 0 8 3a7 7 0 0 0-5.69 11.079 10.817 10.817 0 0 1 1.124-.76C4.544 12.666 6.132 12 8 12c.067 0 .134 0 .2.003A9.985 9.985 0 0 1 8.05 11 2.7 2.7 0 0 1 8 11a3 3 0 1 1 1.198-5.751 10.022 10.022 0 0 1 1.253-1.808ZM8.767 6.152A1.994 1.994 0 0 0 8 6a2 2 0 1 0 0 4 9.97 9.97 0 0 1 .767-3.848Zm-.304 6.864A6.915 6.915 0 0 0 8 13c-1.632 0-3.043.584-4.059 1.181a9.805 9.805 0 0 0-.99.667A6.98 6.98 0 0 0 8 17a6.984 6.984 0 0 0 2.451-.441 9.983 9.983 0 0 1-1.988-3.543Z" clip-rule="evenodd"/></symbol></svg>
+    <div class="inlined-svg"></div>
+    <script>
+/*
+ * (c) Copyright Ascensio System SIA 2010-2023
+ *
+ * This program is a free software product. You can redistribute it and/or
+ * modify it under the terms of the GNU Affero General Public License (AGPL)
+ * version 3 as published by the Free Software Foundation. In accordance with
+ * Section 7(a) of the GNU AGPL its Section 15 shall be amended to the effect
+ * that Ascensio System SIA expressly excludes the warranty of non-infringement
+ * of any third-party rights.
+ *
+ * This program is distributed WITHOUT ANY WARRANTY; without even the implied
+ * warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR  PURPOSE. For
+ * details, see the GNU AGPL at: http://www.gnu.org/licenses/agpl-3.0.html
+ *
+ * You can contact Ascensio System SIA at 20A-6 Ernesta Birznieka-Upish
+ * street, Riga, Latvia, EU, LV-1050.
+ *
+ * The  interactive user interfaces in modified source and object code versions
+ * of the Program must display Appropriate Legal Notices, as required under
+ * Section 5 of the GNU AGPL version 3.
+ *
+ * Pursuant to Section 7(b) of the License you must retain the original Product
+ * logo when distributing the program. Pursuant to Section 7(e) we decline to
+ * grant you any rights under trademark law for use of our trademarks.
+ *
+ * All the Product's GUI elements, including illustrations and icon sets, as
+ * well as technical writing content are licensed under the terms of the
+ * Creative Commons Attribution-ShareAlike 4.0 International. See the License
+ * terms at http://creativecommons.org/licenses/by-sa/4.0/legalcode
+ *
+ */
+
+"use strict";
+(function (window, undefined) {
+	var supportedScaleValues = [1, 1.25, 1.5, 1.75, 2, 2.25, 2.5, 2.75, 3, 3.5, 4, 4.5, 5];
+	if (window["AscDesktopEditor"] && window["AscDesktopEditor"]["GetSupportedScaleValues"])
+		supportedScaleValues = window["AscDesktopEditor"]["GetSupportedScaleValues"]();
+
+	// uncomment to debug all scales
+	//supportedScaleValues = [];
+
+	var isCorrectApplicationScaleEnabled = (function(){
+
+		if (supportedScaleValues.length === 0)
+			return false;
+
+		var userAgent = navigator.userAgent.toLowerCase();
+		var isAndroid = (userAgent.indexOf("android") > -1);
+		var isIE = (userAgent.indexOf("msie") > -1 || userAgent.indexOf("trident") > -1 || userAgent.indexOf("edge") > -1);
+		var isChrome = !isIE && (userAgent.indexOf("chrome") > -1);
+		var isOperaOld = (!!window.opera);
+		var isMobile = /android|avantgo|blackberry|blazer|compal|elaine|fennec|hiptop|iemobile|ip(hone|od|ad)|iris|kindle|lge |maemo|midp|mmp|opera m(ob|in)i|palm( os)?|phone|p(ixi|re)\/|plucker|pocket|psp|symbian|treo|up\.(browser|link)|vodafone|wap|windows (ce|phone)|xda|xiino/i.test(navigator.userAgent || navigator.vendor || window.opera);
+
+		if (isAndroid || !isChrome || isOperaOld || isMobile || !document || !document.firstElementChild || !document.body)
+			return false;
+
+		return true;
+
+	})();
+
+	window['AscCommon'] = window['AscCommon'] || {};
+	window['AscCommon'].checkDeviceScale = function()
+	{
+		var retValue = {
+			zoom: 1,
+			devicePixelRatio: window.devicePixelRatio,
+			applicationPixelRatio: window.devicePixelRatio,
+			correct : false
+		};
+
+		if (!isCorrectApplicationScaleEnabled)
+			return retValue;
+
+		var systemScaling = window.devicePixelRatio;
+		var bestIndex = 0;
+		var bestDistance = Math.abs(supportedScaleValues[0] - systemScaling);
+		var currentDistance = 0;
+		for (var i = 1, len = supportedScaleValues.length; i < len; i++)
+		{
+			if (true)
+			{
+				// это "подстройка под интерфейс" - после убирания этого в общий код - удалить
+				if (Math.abs(supportedScaleValues[i] - systemScaling) > 0.0001)
+				{
+					if (supportedScaleValues[i] > (systemScaling - 0.0001))
+						break;
+				}
+			}
+
+			currentDistance = Math.abs(supportedScaleValues[i] - systemScaling);
+			if (currentDistance < (bestDistance - 0.0001))
+			{
+				bestDistance = currentDistance;
+				bestIndex = i;
+			}
+		}
+
+		retValue.applicationPixelRatio = supportedScaleValues[bestIndex];
+		if (Math.abs(retValue.devicePixelRatio - retValue.applicationPixelRatio) > 0.01)
+		{
+			retValue.zoom = retValue.devicePixelRatio / retValue.applicationPixelRatio;
+			retValue.correct = true;
+		}
+		return retValue;
+	};
+
+	var oldZoomValue = 1;
+	window['AscCommon'].correctApplicationScale = function(zoomValue)
+	{
+		if (!zoomValue.correct && Math.abs(zoomValue.zoom - oldZoomValue) < 0.0001)
+			return;
+		oldZoomValue = zoomValue.zoom;
+		var firstElemStyle = document.firstElementChild.style;
+		if (Math.abs(oldZoomValue - 1) < 0.001)
+			firstElemStyle.zoom = "normal";
+		else
+			firstElemStyle.zoom = 1.0 / oldZoomValue;
+	};
+})(window);
+
+</script>
+    <script data-main="app" src="../../../vendor/requirejs/require.js"></script>
+
+</body>
+</html>
